@@ -9,7 +9,7 @@
   </a>
   <a href="https://play.google.com/store/apps/details?id=com.mobile.legends"><img src="https://img.shields.io/badge/Game-Mobile_Legends-important?logo=youtubegaming" alt="Game - Mobile Legends">
   </a>
-  <a href="https://t0pgamemurah.xyz/freeKey"><img src="https://img.shields.io/badge/generate-key-blue?logo=keeweb&logoColor=fff" alt="generate - key">
+  <a href="https://www.patreon.com/posts/149586712?utm_campaign=postshare_creator&utm_content=android_share"><img src="https://img.shields.io/badge/generate-key-blue?logo=keeweb&logoColor=fff" alt="generate - key">
   </a>
   <a href="https://github.com/anggorodhanumurti/themaphack/releases/"><img src="https://img.shields.io/github/tag/anggorodhanumurti/themaphack?include_prereleases=&sort=semver&color=blue" alt="GitHub tag"></a>
   <a href="https://www.patreon.com/themaphack"><img src="https://img.shields.io/badge/Get-Latest_updates-ff69b4?logo=patreon" alt="Get - Latest updates"></a>
@@ -42,7 +42,7 @@ Our key advantage compared to others mod:
   - The **modular** design lets users extend the features of this mod to suit their specific needs.
 
 * **Account Safety**
-  -  To mitigate the risk of bans, a [special guide](https://docs.google.com/forms/d/e/1FAIpQLSc9z_tA6EC6ypZM4oP4Jfc-gqQXQlyVbsMalOlqVTeBttmrYQ/viewform) is available to VIP users aimed at avoiding detection.
+  -  To mitigate the risk of bans, a [special guide](https://www.patreon.com/posts/130259867?utm_campaign=postshare_creator&utm_content=android_share) is available to VIP users aimed at avoiding detection.
 
 ## Main Features
 
@@ -72,8 +72,7 @@ _An extensive tutorial is available for building Themaphack using ndk-build with
 <a href="https://themaphack.com/build"><img src="https://img.shields.io/static/v1?label=Build&message=from+source&color=black&style=for-the-badge&logo=cplusplus" alt="Build - from source"></a>
 
 > [!WARNING]
-> Your account is still not safe from banned. So before you open mlbb game make sure you follow [this guide](https://docs.google.com/forms/d/e/1FAIpQLSc9z_tA6EC6ypZM4oP4Jfc-gqQXQlyVbsMalOlqVTeBttmrYQ/viewform)
-
+> Your account is still not safe from banned. So before you open mlbb game make sure you follow [this guide](https://www.patreon.com/posts/130259867?utm_campaign=postshare_creator&utm_content=android_share)
 ## FAQ
 
 <a href="https://themaphack.com/faq/"><img src="https://img.shields.io/static/v1?label=Frequently&message=Ask+Question&color=informational&style=for-the-badge&logo=livechat&logoColor=white" alt="Frequently - Ask Question"></a>
