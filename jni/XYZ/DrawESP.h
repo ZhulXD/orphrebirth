@@ -389,31 +389,43 @@ CooldownValues getPlayerCoolDown(int keys, uintptr_t values) {
 // Lord/Turtle "under attack" chat-bubble panel, drawn to the right of the
 // minimap (Minimap::StartPos + MapSize). Shows a bold title and a proportional
 // health bar inside the bubble.
-void DrawLordTurtleAlert(const char *title, int hp, int hpMax) {
+void DrawLordTurtleAlert(const char *name, int hp, int hpMax, float screenHeight) {
     if (!ChatBubbleIcon.IsValid) return;
     auto dl = ImGui::GetBackgroundDrawList();
-    const float W = 250.0f, H = 160.0f;
-    ImVec2 p(StartPos.x + MapSize + 8.0f, StartPos.y + 4.0f);
-    dl->AddImageRounded((void *)(uintptr_t)ChatBubbleIcon.texture, p, ImVec2(p.x + W, p.y + H), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 255), 8.0f);
-    // faux-bold title in the (white) body of the bubble
-    const float fs = 20.0f;
-    auto ts = ImGui::CalcTextSize(title, 0, fs);
-    ImVec2 tp(p.x + (W - ts.x) / 2.0f, p.y + 46.0f);
-    ImU32 tcol = IM_COL32(20, 20, 20, 255);
-    dl->AddText(NULL, fs, tp, tcol, title);
-    dl->AddText(NULL, fs, ImVec2(tp.x + 1.0f, tp.y), tcol, title);
-    // proportional health bar below the title
-    const float barW = W * 0.60f, barH = 12.0f;
-    ImVec2 bs(p.x + (W - barW) / 2.0f, p.y + 78.0f);
+    // Two-line title so the font stays big/proportional in a compact bubble:
+    //   line 1 = "<name> Is", line 2 = "Under Attack".
+    std::string l1 = std::string(name) + " Is";
+    const char *l2 = "Under Attack";
+    float fs = (screenHeight > 0.0f ? screenHeight : 720.0f) * 0.024f;   // proportional font
+    ImVec2 t1 = ImGui::CalcTextSize(l1.c_str(), 0, fs);
+    ImVec2 t2 = ImGui::CalcTextSize(l2, 0, fs);
+    float tw = t1.x > t2.x ? t1.x : t2.x;
+    // size the bubble to the text (interior is ~80% wide, ~72% tall of the image)
+    const float lineH = fs * 1.12f, barH = fs * 0.60f;
+    const float iw = tw / 0.80f;
+    const float ih = lineH * 2.0f + barH + fs * 0.55f;
+    const float W = iw / 0.91f, H = ih / 0.72f;
+    ImVec2 p(StartPos.x + MapSize + 8.0f, StartPos.y + 2.0f);
+    dl->AddImageRounded((void *)(uintptr_t)ChatBubbleIcon.texture, p, ImVec2(p.x + W, p.y + H), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 255), 4.0f);
+    const float icx = p.x + 0.5f * W, iyt = p.y + 0.055f * H;
+    const ImU32 tcol = IM_COL32(20, 20, 20, 255);
+    // line 1 (faux-bold)
+    ImVec2 pa(icx - t1.x * 0.5f, iyt + fs * 0.15f);
+    dl->AddText(NULL, fs, pa, tcol, l1.c_str());
+    dl->AddText(NULL, fs, ImVec2(pa.x + 1.0f, pa.y), tcol, l1.c_str());
+    // line 2 (faux-bold)
+    ImVec2 pb(icx - t2.x * 0.5f, pa.y + lineH);
+    dl->AddText(NULL, fs, pb, tcol, l2);
+    dl->AddText(NULL, fs, ImVec2(pb.x + 1.0f, pb.y), tcol, l2);
+    // health bar below the text (no number)
+    const float barW = iw * 0.9f;
+    ImVec2 bs(icx - barW * 0.5f, pb.y + lineH * 0.95f);
     ImVec2 be(bs.x + barW, bs.y + barH);
     float pct = hpMax > 0 ? (float)hp / (float)hpMax : 0.0f;
     if (pct < 0.0f) pct = 0.0f;
     if (pct > 1.0f) pct = 1.0f;
-    dl->AddRectFilled(bs, ImVec2(bs.x + barW * pct, be.y), IM_COL32(220, 30, 30, 255), 3.0f);
-    dl->AddRect(bs, be, IM_COL32(0, 0, 0, 255), 3.0f);
-    std::string hpStr = to_string(hp);
-    auto hts = ImGui::CalcTextSize(hpStr.c_str(), 0, 15);
-    dl->AddText(NULL, 15, ImVec2(bs.x + (barW - hts.x) / 2.0f, bs.y - 1.0f), IM_COL32(255, 255, 255, 255), hpStr.c_str());
+    dl->AddRectFilled(bs, ImVec2(bs.x + barW * pct, be.y), IM_COL32(220, 30, 30, 255), 2.0f);
+    dl->AddRect(bs, be, IM_COL32(0, 0, 0, 255), 2.0f);
 }
 
 void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
@@ -427,6 +439,14 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
 	if (g_Token != g_Auth)
         return;
 	*/
+    // Auto-fit the maphack minimap to the game's minimap (proportions calibrated
+    // to MLBB's top-left square minimap). When on, StartPos/MapSize are derived
+    // from screen height each frame and the manual sliders are disabled.
+    if (Config.MinimapAutoSize) {
+        MapSize    = (int)(screenHeight * 0.322f);
+        StartPos.x = screenHeight * 0.053f;
+        StartPos.y = 0.0f;                      // flush to the top of the screen
+    }
     if (Config.ESP.FPS) {
         std::string sFPS = "FPS: ";
         sFPS += std::to_string(fps.get());
@@ -529,12 +549,13 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
             DrawMonster2(rootPosVec2, m_ID, m_Hp, m_HpMax);
         }
 		
-		if (Config.ESP.Monster.Alert) {
-            if (m_ID == 2002 && m_Hp < m_HpMax) {
-                DrawLordTurtleAlert("Lord Is Under Attack", m_Hp, m_HpMax);
+		if (Config.ESP.Monster.Alert && m_Hp > 0 && m_HpMax > 0 && m_Hp < m_HpMax) {
+            // guard against the 1-frame spawn glitch (hp/hpMax briefly 0)
+            if (m_ID == 2002) {
+                DrawLordTurtleAlert("Lord", m_Hp, m_HpMax, screenHeight);
             }
-            if (m_ID == 2003 && m_Hp < m_HpMax) {
-                DrawLordTurtleAlert("Turtle Is Under Attack", m_Hp, m_HpMax);
+            if (m_ID == 2003) {
+                DrawLordTurtleAlert("Turtle", m_Hp, m_HpMax, screenHeight);
             }
         }
 		
