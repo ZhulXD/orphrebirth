@@ -182,17 +182,14 @@ std::string Login(JavaVM *jvm, const char *user_key, bool *success) {
 
                         *success = g_Token == g_Auth;
                         if (!*success) {
-                            // Diagnostic: server accepted the key but the local
-                            // token check failed -> pepper/formula mismatch.
-                            errMsg = "AUTH MISMATCH\nserver: " + g_Token +
-                                     "\nclient: " + g_Auth +
-                                     "\nserial: " + UUID;
+                            // Server accepted the key but the token did not
+                            // match locally (key/serial/pepper mismatch).
+                            errMsg = OBF("Login failed: invalid key");
                         }
                     } else {
                         // rng window failed -> device/server clock skew.
                         *success = false;
-                        errMsg = "TIME WINDOW EXPIRED\nrng=" + std::to_string((long long) rng) +
-                                 " now=" + std::to_string((long long) time(0));
+                        errMsg = OBF("Login failed: device clock out of sync, please retry");
                     }
                 } else {
 					*success = false;
