@@ -445,6 +445,10 @@ uintptr_t EntityBase_m_bDeath(){
 	return (uintptr_t) Il2CppGetFieldOffset("Assembly-CSharp.dll", "", "ShowEntity", "m_bDeath");
 }
 
+uintptr_t EntityBase_IsSoldier(){
+	return (uintptr_t) Il2CppGetFieldOffset("Assembly-CSharp.dll", "", "ShowEntity", "IsSoldier");
+}
+
 uintptr_t EntityBase_canSight(){
 	return (uintptr_t) Il2CppGetFieldOffset("Assembly-CSharp.dll", "", "ShowEntity", "canSight");
 }

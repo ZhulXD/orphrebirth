@@ -213,6 +213,10 @@ void Render()
         AttachIcon();
         AttachIconDone = true;
     }
+    if (!AttachChatBubbleDone) {
+        AttachChatBubble();
+        AttachChatBubbleDone = true;
+    }
     
     if (!AttachSpellDone) {
         AttachSpell();
