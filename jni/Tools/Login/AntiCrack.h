@@ -36,9 +36,11 @@ inline bool debuggerAttached() {
 // Frida / dynamic-instrumentation frameworks leave recognizable regions in
 // the process memory map.
 inline bool instrumentationPresent() {
+    // Frida-specific markers only — generic tokens like "gmain"/"gadget" are
+    // avoided so a normal (non-Frida) injected environment is not flagged.
     std::string needles[] = {
-        OBF("frida"), OBF("gum-js-loop"), OBF("gmain"),
-        OBF("linjector"), OBF("gadget"), OBF("frida-agent"),
+        OBF("frida"), OBF("gum-js-loop"), OBF("frida-agent"),
+        OBF("linjector"), OBF("re.frida"),
     };
     std::ifstream maps("/proc/self/maps");
     if (!maps.is_open()) return false;
