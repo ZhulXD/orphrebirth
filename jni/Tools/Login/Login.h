@@ -163,7 +163,7 @@ std::string Login(JavaVM *jvm, const char *user_key, bool *success) {
 					clientManager = result[std::string("data")][std::string("client")].get<std::string>();
 					
                     battleData = "true";
-                    if (rng + 30 > time(0)) {
+                    if (rng + 300 > time(0)) {
                         std::string auth = "MLBB";
                         auth += std::string("-");
                         auth += user_key;
@@ -174,11 +174,20 @@ std::string Login(JavaVM *jvm, const char *user_key, bool *success) {
                         std::string outputAuth = Tools::CalcMD5(auth);
                         g_Token = token;
                         g_Auth = outputAuth;
-                        
+
                         *success = g_Token == g_Auth;
-                        if (success) {
-                            pthread_t t;
+                        if (!*success) {
+                            // Diagnostic: server accepted the key but the local
+                            // token check failed -> pepper/formula mismatch.
+                            errMsg = "AUTH MISMATCH\nserver: " + g_Token +
+                                     "\nclient: " + g_Auth +
+                                     "\nserial: " + UUID;
                         }
+                    } else {
+                        // rng window failed -> device/server clock skew.
+                        *success = false;
+                        errMsg = "TIME WINDOW EXPIRED\nrng=" + std::to_string((long long) rng) +
+                                 " now=" + std::to_string((long long) time(0));
                     }
                 } else {
 					*success = false;
