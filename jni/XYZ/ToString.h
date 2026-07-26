@@ -1,5 +1,10 @@
 #pragma once
 
+#include <map>
+#include <string>
+#include <algorithm>
+#include <cctype>
+
 std::string strHero[] = {
     "-",
     "Miya",
@@ -130,8 +135,33 @@ std::string HeroToString(int heroid) {
 	if (strHero[heroid] != "") {
 		return strHero[heroid];
 	} else {
-		return "Hero ID: " + to_string(heroid); 
+		return "Hero ID: " + to_string(heroid);
 	}
+}
+
+// Resolve a hero NAME to its id (index in strHero[]), or -1 if unknown.
+// strHero[] is index-aligned with the icon tables, so this lets icons be
+// looked up by hero name (universal, present in tutorial mode) instead of by
+// hero id (not yet populated in tutorial mode). Case-insensitive, trimmed.
+static inline int HeroNameToId(const std::string &name) {
+	static std::map<std::string, int> nameToId;
+	if (nameToId.empty()) {
+		int count = (int)(sizeof(strHero) / sizeof(strHero[0]));
+		for (int i = 1; i < count; i++) {
+			std::string n = strHero[i];
+			std::transform(n.begin(), n.end(), n.begin(), [](unsigned char c){ return std::tolower(c); });
+			if (!n.empty() && n != "-") nameToId[n] = i;
+		}
+	}
+	if (name.empty()) return -1;
+	std::string key = name;
+	size_t a = key.find_first_not_of(" \t\r\n");
+	size_t b = key.find_last_not_of(" \t\r\n");
+	if (a == std::string::npos) return -1;
+	key = key.substr(a, b - a + 1);
+	std::transform(key.begin(), key.end(), key.begin(), [](unsigned char c){ return std::tolower(c); });
+	auto it = nameToId.find(key);
+	return it != nameToId.end() ? it->second : -1;
 }
 
 std::string SpellToString(int summonSkillId) {

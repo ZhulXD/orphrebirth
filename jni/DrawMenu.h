@@ -334,13 +334,11 @@ void DrawMenu() {
                     	ImGui::TableNextColumn();	ImGui::Checkbox(" Player Line", &Config.ESP.Player.Line);
                         ImGui::TableNextColumn();	ImGui::Checkbox(" Player Box", &Config.ESP.Player.Box);
                         ImGui::TableNextColumn();	ImGui::Checkbox(" Player Name", &Config.ESP.Player.Name);
-                        ImGui::TableNextColumn();	ImGui::Checkbox(" Player Hero", &Config.ESP.Player.Hero);
                         ImGui::TableNextColumn();	ImGui::Checkbox(" Player Health", &Config.ESP.Player.Health);
-						ImGui::TableNextColumn();	ImGui::Checkbox(" Player Distance", &Config.ESP.Player.Distance);
-						ImGui::TableNextColumn();	ImGui::Checkbox(" Player Locator", &Config.ESP.Player.Locator2);
                         ImGui::TableNextColumn();	ImGui::Checkbox(" Hero Alert", &Config.ESP.Player.Alert);
                         ImGui::TableNextColumn();	ImGui::Checkbox(" Icon Hero", &Config.ESP.Player.HeroZ);
                         ImGui::TableNextColumn();	ImGui::Checkbox(" Visible Check", &Config.ESP.Player.Visible);
+                        ImGui::TableNextColumn();	ImGui::Checkbox(" Info Cooldown", &Config.ESP.Player.CoolDown);
                         ImGui::TableNextColumn();	ImGui::Spacing();
                         ImGui::EndTable();
                     }
@@ -352,8 +350,6 @@ void DrawMenu() {
                         ImGui::TableNextColumn();	ImGui::Checkbox(" Monster Name", &Config.ESP.Monster.Name);
                         ImGui::TableNextColumn();	ImGui::Checkbox(" Monster Alert", &Config.ESP.Monster.Alert);
 						ImGui::TableNextColumn();	ImGui::Checkbox(" Monster Icon", &Config.ESP.Monster.Locator);
-						ImGui::TableNextColumn();	ImGui::Checkbox(" Monster Locator", &Config.ESP.Monster.Locator2);
-						ImGui::TableNextColumn();	ImGui::Checkbox(" Monster UID", &Config.m_IDConf);
                         ImGui::EndTable();
                     }
                 }
@@ -476,7 +472,7 @@ void DrawMenu() {
                     ImGui::BeginGroupPanel("Key Info", ImVec2(-1.0f, 0.0f));
                     {
 						Text("Telegram Group: "); SameLine();
-                        TextColored(RGBA2ImVec4(176, 40, 40, 255), "@THEMAPHACK");
+                        TextColored(RGBA2ImVec4(176, 40, 40, 255), "@safkq");
                         Text("Key Expired: "); SameLine();
                         ImGui::TextColored(RGBA2ImVec4(176, 40, 40, 255), expired.c_str());
                         Text("Key Slot: "); SameLine();
@@ -491,7 +487,7 @@ void DrawMenu() {
 						}
 						
 						Text("Telegram Channel: "); SameLine();
-						Text("@THEMAPHACK");
+						Text("@safkq");
                     }
                     ImGui::EndGroupPanel();
                 }

@@ -521,13 +521,6 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
     		}
         }
 		
-		if (Config.ESP.Monster.Locator2) {
-        	draw->AddText(NULL, ((float) screenHeight / 31.0f), {rootPosVec2.x, rootPosVec2.y - 115.0f}, IM_COL32(255, 255, 255, 255), ICON_FA_ARROW_DOWN);
-            if (PerHP < m_HpMax) {
-            	draw->AddText(NULL, ((float) screenHeight / 31.0f), {rootPosVec2.x, rootPosVec2.y - 115.0f}, IM_COL32(255, 3, 3, 255), ICON_FA_ARROW_DOWN);
-            }
-        }
-		
         if (Config.ESP.Monster.JungelAttack) {
             if (m_ID == 2004 && m_Hp < m_HpMax) {
                 std::string strAlert = "[ALERT] Red Buff is under Attack!";
@@ -563,6 +556,14 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
         auto rootPosVec2 = getPosVec2(_Position, screenWidth, screenHeight);
         auto spellDrawing = ImVec2(rootPosVec2.x + 55, rootPosVec2.y - 15);
         auto *m_HeroName = *(String **) ((uintptr_t)values + ShowPlayer_m_HeroName());
+        // Resolve the hero icon by NAME first (the hero name is universal and is
+        // available in tutorial mode, where the numeric hero id is not yet set);
+        // fall back to the numeric id when the name is unknown.
+        int iconId = m_ID;
+        if (m_HeroName) {
+            int byName = HeroNameToId(m_HeroName->toString());
+            if (byName > 0) iconId = byName;
+        }
         int Distance = (int) Vector3::Distance(selfPos, _Position);
         auto inBattle = *(bool **) ((uintptr_t)values + ShowPlayer_m_bInBattle);
         auto canSight = *(bool *) ((uintptr_t)values + EntityBase_canSight());
@@ -602,18 +603,11 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
         if (Config.MinimapIcon && m_ID == 53 && AttachIconDone) {
             auto m_EntityCampType = *(int *) ((uintptr_t)values + EntityBase_m_EntityCampType());
             auto minimapPos = WorldToMinimap(m_EntityCampType, _Position);
-            DrawIconHero(ImVec2(minimapPos.x, minimapPos.y), m_ID, m_Hp, m_HpMax);
+            DrawIconHero(ImVec2(minimapPos.x, minimapPos.y), iconId, m_Hp, m_HpMax);
         } else if (Config.MinimapIcon && !bShowEntityLayer && AttachIconDone) {
             auto m_EntityCampType = *(int *) ((uintptr_t)values + EntityBase_m_EntityCampType());
             auto minimapPos = WorldToMinimap(m_EntityCampType, _Position);
-            DrawIconHero(ImVec2(minimapPos.x, minimapPos.y), m_ID, m_Hp, m_HpMax);
-        }
-		
-		if (Config.ESP.Player.Locator2) {
-        	draw->AddText(NULL, ((float) screenHeight / 31.0f), {rootPosVec2.x, rootPosVec2.y - 115.0f}, IM_COL32(255, 255, 255, 255), ICON_FA_ARROW_DOWN);
-            if (PerHP < m_HpMax) {
-            	draw->AddText(NULL, ((float) screenHeight / 31.0f), {rootPosVec2.x, rootPosVec2.y - 115.0f}, IM_COL32(255, 3, 3, 255), ICON_FA_ARROW_DOWN);
-            }
+            DrawIconHero(ImVec2(minimapPos.x, minimapPos.y), iconId, m_Hp, m_HpMax);
         }
 		
         //if (!bShowEntityLayer) {
@@ -661,14 +655,8 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
         if (Config.ESP.Player.Round) {
             draw->AddCircleFilled(rootPosVec2, 10, IM_COL32(255, 255, 255, 255));
         }
-		// default: rootPosVec2.y + 5
-		if (Config.ESP.Player.Distance) {
-        	std::string strDistance = to_string(Distance) + " M";
-            auto textSize = ImGui::CalcTextSize(strDistance.c_str(), 0, ((float) screenHeight / 39.0f));
-            draw->AddText(NULL, ((float) screenHeight / 39.0f), {rootPosVec2.x - (textSize.x / 2), rootPosVec2.y + 15}, IM_COL32(10, 255, 202, 255), strDistance.c_str());
-        }
 
-        if (Config.ESP.Player.CoolDown || Config.ESP.Player.CoolDown2) {
+        if (Config.ESP.Player.CoolDown || Config.ESP.Player.CoolDown) {
             auto coolDownData = getPlayerCoolDown(keys, values);
             if (Config.ESP.Player.CoolDown) {
                 if (coolDownData.skill1) {
@@ -694,7 +682,7 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
                 }
             }
             if (coolDownData.skillCount >= 4) {
-                if (Config.ESP.Player.CoolDown && Config.ESP.Player.CoolDown2) {
+                if (Config.ESP.Player.CoolDown && Config.ESP.Player.CoolDown) {
                     if (coolDownData.skill4) {
                         std::string strCoolDown = to_string(coolDownData.skill4);
                         auto textSize = ImGui::CalcTextSize(strCoolDown.c_str(), 0, 30);
@@ -721,7 +709,7 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
                         draw->AddCircleFilled(ImVec2(rootPosVec2.x + 55 + (40 * 3), rootPosVec2.y - 15), 10, IM_COL32(255, 255, 0, 255));
                     }
                     draw->AddLine(rootPosVec2, ImVec2(rootPosVec2.x + 185, rootPosVec2.y), IM_COL32(255, 255, 255, 255));
-                } else if (Config.ESP.Player.CoolDown2) {
+                } else if (Config.ESP.Player.CoolDown) {
                     if (coolDownData.spell) {
                         std::string strCoolDown = to_string(coolDownData.spell);
                         auto textSize = ImGui::CalcTextSize(strCoolDown.c_str(), 0, 30);
@@ -734,7 +722,7 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
                     draw->AddLine(rootPosVec2, ImVec2(rootPosVec2.x + 65, rootPosVec2.y), IM_COL32(255, 255, 255, 255));
                 }
             } else if (coolDownData.skillCount == 3) {
-                if (Config.ESP.Player.CoolDown && Config.ESP.Player.CoolDown2) {
+                if (Config.ESP.Player.CoolDown && Config.ESP.Player.CoolDown) {
                     if (coolDownData.spell) {
                         std::string strCoolDown = to_string(coolDownData.spell);
                         auto textSize = ImGui::CalcTextSize(strCoolDown.c_str(), 0, 30);
@@ -747,7 +735,7 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
                     draw->AddLine(rootPosVec2, ImVec2(rootPosVec2.x + 185, rootPosVec2.y), IM_COL32(255, 255, 255, 255));
                 } else if (Config.ESP.Player.CoolDown) {
                     draw->AddLine(rootPosVec2, ImVec2(rootPosVec2.x + 145, rootPosVec2.y), IM_COL32(255, 255, 255, 255));
-                } else if (Config.ESP.Player.CoolDown2) {
+                } else if (Config.ESP.Player.CoolDown) {
                     if (coolDownData.spell) {
                         std::string strCoolDown = to_string(coolDownData.spell);
                         auto textSize = ImGui::CalcTextSize(strCoolDown.c_str(), 0, 30);
@@ -765,12 +753,7 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
             ImVec2 hintDotRenderPos = pushToScreenBorder(ImVec2(rootPosVec2.x, rootPosVec2.y), ImVec2(screenWidth, screenHeight), - 50);
             ImVec2 hintTextRenderPos = pushToScreenBorder(ImVec2(rootPosVec2.x, rootPosVec2.y), ImVec2(screenWidth, screenHeight), - 50);
             //DrawCircleHealth(hintDotRenderPos, CurHP, MaxHP, 25);
-            DrawLogo(ImGui::GetForegroundDrawList(), hintDotRenderPos, m_ID, m_Hp, m_HpMax);
-            if(Config.ESP.Player.Distance){
-                std::string strDistance = to_string(Distance) + " M";
-                auto textSize = ImGui::CalcTextSize(strDistance.c_str(), 0, ((float) screenHeight / 45.0f));
-                draw->AddText(NULL, ((float) screenHeight / 45.0f), {hintTextRenderPos.x - (textSize.x / 2), hintTextRenderPos.y + 7}, IM_COL32(255, 255, 255, 255), strDistance.c_str());
-            }
+            DrawLogo(ImGui::GetForegroundDrawList(), hintDotRenderPos, iconId, m_Hp, m_HpMax);
             if (m_HeroName) {
                 std::string strName = m_HeroName->toString();
                 if(Config.ESP.Player.Status) {
@@ -782,7 +765,7 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
         }
         
         if (Config.ESP.Player.HeroZ) {
-            DrawHero(rootPosVec2, m_ID, m_Hp, m_HpMax);
+            DrawHero(rootPosVec2, iconId, m_Hp, m_HpMax);
         }
         
 
