@@ -76,7 +76,13 @@ LOCAL_SRC_FILES := imgui/imgui.cpp    \
     xHook/xh_util.c \
     xHook/xh_version.c \
     Main.cpp
-                     
+
+# armeabi-v7a: prebuilt OpenSSL expects the outlined __sync_add_and_fetch_4
+# helper that modern Clang no longer provides. Supply it via a small shim.
+ifeq ($(TARGET_ARCH_ABI),armeabi-v7a)
+LOCAL_SRC_FILES += Tools/atomic_compat.S
+endif
+
 LOCAL_STATIC_LIBRARIES  := libcurl libssl libcrypto libdobby
 
 include $(BUILD_SHARED_LIBRARY)

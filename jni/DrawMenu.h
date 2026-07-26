@@ -64,7 +64,7 @@ void loadConfig() {
         close(fd);
 }
 void saveConfig(){
-    int fd = open("/storage/emulated/0/Android/data/com.mobile.legends/tmh.ini", O_WRONLY | O_CREAT);
+    int fd = open("/storage/emulated/0/Android/data/com.mobile.legends/tmh.ini", O_WRONLY | O_CREAT, 0644);
     system("chmod 777 /storage/emulated/0/Android/data/com.mobile.legends/tmh.ini");
     write(fd, &Config , sizeof(Config));
     write(fd, &Aim, sizeof(Aim));
