@@ -76,9 +76,16 @@ void RenderESP(ImDrawList *draw, int screenWidth, int screenHeight) {
                                 auto *m_RoleName = *(String **)((uintptr_t)Pawn + ShowEntity_m_RoleName);
                                 auto *m_HeroName = *(String **)((uintptr_t)Pawn + ShowPlayer_m_HeroName());
                                 auto HeroID = *(int *)((uintptr_t)Pawn + EntityBase_m_ID());
+                                // Resolve icon by hero NAME first (works in tutorial mode where
+                                // the hero id is not yet populated); fall back to the id.
+                                int iconID = HeroID;
+                                if (m_HeroName) {
+                                    int byName = HeroNameToId(m_HeroName->toString());
+                                    if (byName > 0) iconID = byName;
+                                }
                                 int Distance = (int)Vector3::Distance(selfPos, _Position);
                                 if (isMinimapEnabled) {
-                                    DrawHero(CoordinateMap(_Position,minimapPosition.x, minimapPosition.y, minimapSize.x, minimapSize.y), HeroID, CurHP, MaxHP, ICSize, ICHealthThin );
+                                    DrawHero(CoordinateMap(_Position,minimapPosition.x, minimapPosition.y, minimapSize.x, minimapSize.y), iconID, CurHP, MaxHP, ICSize, ICHealthThin );
                                 }
                             }
                         }
