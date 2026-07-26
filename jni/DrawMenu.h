@@ -362,8 +362,11 @@ void DrawMenu() {
                 if (!Config.MinimapIcon) ImGui::BeginDisabled();
                 ImGui::SameLine();
                 ImGui::Checkbox("Hide Line", &Config.HideLine);
+                ImGui::SameLine();
+                ImGui::Checkbox("Auto Size", &Config.MinimapAutoSize);
                 ImGui::BeginGroup();
                 {
+                    ImGui::BeginDisabled(Config.MinimapAutoSize);
                     ImGui::BeginGroupPanel("MiniMap Adjustable", ImVec2(-1.0f, 0.0f));
                    {
                         ImGui::BeginGroupPanel("Map Position", ImVec2(ImGui::GetContentRegionAvail().x, 0.0f));
@@ -414,6 +417,7 @@ void DrawMenu() {
                         ImGui::Spacing();
                     }
                     ImGui::EndGroupPanel();
+                    ImGui::EndDisabled();
                     if (!Config.MinimapIcon) ImGui::EndDisabled();
                 }
                 ImGui::EndGroup();

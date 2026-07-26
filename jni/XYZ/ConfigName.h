@@ -294,6 +294,7 @@ struct sConfig {
     bool m_IDConf;
     bool MinimapIcon;
 	bool MinimapIconEnable;
+    bool MinimapAutoSize;
     bool HideLine;
     int MapSize = 341; //width & height
     ImVec2 StartPos = {(float)105, (float)0};

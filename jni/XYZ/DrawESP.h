@@ -392,7 +392,7 @@ CooldownValues getPlayerCoolDown(int keys, uintptr_t values) {
 void DrawLordTurtleAlert(const char *title, int hp, int hpMax) {
     if (!ChatBubbleIcon.IsValid) return;
     auto dl = ImGui::GetBackgroundDrawList();
-    const float W = 250.0f;
+    const float W = 170.0f;
     const float H = W * (406.0f / 834.0f);          // keep the bubble's aspect ratio
     ImVec2 p(StartPos.x + MapSize + 8.0f, StartPos.y + 4.0f);
     dl->AddImageRounded((void *)(uintptr_t)ChatBubbleIcon.texture, p, ImVec2(p.x + W, p.y + H), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 255), 4.0f);
@@ -435,6 +435,14 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
 	if (g_Token != g_Auth)
         return;
 	*/
+    // Auto-fit the maphack minimap to the game's minimap (proportions calibrated
+    // to MLBB's top-left square minimap). When on, StartPos/MapSize are derived
+    // from screen height each frame and the manual sliders are disabled.
+    if (Config.MinimapAutoSize) {
+        MapSize    = (int)(screenHeight * 0.322f);
+        StartPos.x = screenHeight * 0.053f;
+        StartPos.y = screenHeight * 0.011f;
+    }
     if (Config.ESP.FPS) {
         std::string sFPS = "FPS: ";
         sFPS += std::to_string(fps.get());
@@ -537,11 +545,12 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
             DrawMonster2(rootPosVec2, m_ID, m_Hp, m_HpMax);
         }
 		
-		if (Config.ESP.Monster.Alert) {
-            if (m_ID == 2002 && m_Hp < m_HpMax) {
+		if (Config.ESP.Monster.Alert && m_Hp > 0 && m_HpMax > 0 && m_Hp < m_HpMax) {
+            // guard against the 1-frame spawn glitch (hp/hpMax briefly 0)
+            if (m_ID == 2002) {
                 DrawLordTurtleAlert("Lord Is Under Attack", m_Hp, m_HpMax);
             }
-            if (m_ID == 2003 && m_Hp < m_HpMax) {
+            if (m_ID == 2003) {
                 DrawLordTurtleAlert("Turtle Is Under Attack", m_Hp, m_HpMax);
             }
         }
