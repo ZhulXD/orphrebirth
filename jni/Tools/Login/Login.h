@@ -3,6 +3,7 @@
 #include "Tools.h"
 #include "json.hpp"
 #include "ObfStr.h"
+#include "AntiCrack.h"
 
 using json = nlohmann::ordered_json;
 
@@ -17,7 +18,7 @@ using json = nlohmann::ordered_json;
 //   KS_TELEGRAM_URL : seller contact opened by the in-menu Telegram button.
 // ===========================================================================
 #define KS_ENDPOINT_URL "https://orphsystem.lovable.app/api/public/freeKey"
-#define KS_AUTH_PEPPER  "Ahag6#&K8ja@$Hgu!gHs#G4#ja@k#"
+#define KS_AUTH_PEPPER  "tqum7laqGlKqpkyCL4BAWDQkBEEK4tX7WTNHxp8o"
 #define KS_TLS_PIN      "sha256//+cWUJ/hdAetPUsYN4LX445lyt3vPAPM8KrDEg+Zei4s="
 #define KS_TELEGRAM_URL "https://t.me/safkq"
 
@@ -65,11 +66,15 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
 }
 
 std::string Login(JavaVM *jvm, const char *user_key, bool *success) {
-    // NOTE: no TracerPid/anti-debug gate here. The mod is injected into the
-    // game process (ptrace/zygisk), which legitimately sets TracerPid != 0, so
-    // an anti-debug gate would reject every real login. String obfuscation and
-    // TLS certificate pinning (below) provide the anti-crack protection that is
-    // compatible with an injected environment.
+    // Anti-crack gate. Checked at login time (long after the loader has
+    // injected and detached), so a ptrace-based injector no longer shows as a
+    // tracer here — only a persistent debugger or Frida does. On a hit we
+    // return a visible message instead of failing silently, so the block is
+    // never confused with a normal auth failure.
+    if (anticrack::isCompromised()) {
+        *success = false;
+        return OBF("BLOCKED: debugger / instrumentation detected");
+    }
 
     JNIEnv *env;
     jvm->AttachCurrentThread(&env, 0);
@@ -163,7 +168,7 @@ std::string Login(JavaVM *jvm, const char *user_key, bool *success) {
 					clientManager = result[std::string("data")][std::string("client")].get<std::string>();
 					
                     battleData = "true";
-                    if (rng + 30 > time(0)) {
+                    if (rng + 300 > time(0)) {
                         std::string auth = "MLBB";
                         auth += std::string("-");
                         auth += user_key;
@@ -174,11 +179,17 @@ std::string Login(JavaVM *jvm, const char *user_key, bool *success) {
                         std::string outputAuth = Tools::CalcMD5(auth);
                         g_Token = token;
                         g_Auth = outputAuth;
-                        
+
                         *success = g_Token == g_Auth;
-                        if (success) {
-                            pthread_t t;
+                        if (!*success) {
+                            // Server accepted the key but the token did not
+                            // match locally (key/serial/pepper mismatch).
+                            errMsg = OBF("Login failed: invalid key");
                         }
+                    } else {
+                        // rng window failed -> device/server clock skew.
+                        *success = false;
+                        errMsg = OBF("Login failed: device clock out of sync, please retry");
                     }
                 } else {
 					*success = false;
