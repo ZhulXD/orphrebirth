@@ -348,7 +348,7 @@ void DrawMenu() {
                     	ImGui::TableNextColumn();	ImGui::Checkbox(" Monster Round", &Config.ESP.Monster.Rounded);
                         ImGui::TableNextColumn();	ImGui::Checkbox(" Monster Health", &Config.ESP.Monster.Health);
                         ImGui::TableNextColumn();	ImGui::Checkbox(" Monster Name", &Config.ESP.Monster.Name);
-                        ImGui::TableNextColumn();	ImGui::Checkbox(" Monster Alert", &Config.ESP.Monster.Alert);
+                        ImGui::TableNextColumn();	ImGui::Checkbox(" Lord/Turtle Alert", &Config.ESP.Monster.Alert);
 						ImGui::TableNextColumn();	ImGui::Checkbox(" Monster Icon", &Config.ESP.Monster.Locator);
                         ImGui::EndTable();
                     }

@@ -3,6 +3,7 @@
 #include "stb_image.h"
 #include "IconList.h"
 #include "base64.hpp"
+#include "ChatBubble.h"
 
 void writeToFile(std::string dir, std::string buf) {
     std::ofstream os(dir.c_str(), std::ios::trunc);
@@ -137,6 +138,19 @@ void AttachMonsterAlert() {
 		std::remove(Path.c_str());        
 		MonsterAlert.push_back(Test);   
 	}
+}
+
+Icon ChatBubbleIcon;
+bool AttachChatBubbleDone;
+void AttachChatBubble() {
+	std::string packageName = "com.vng.mlbbvn";
+	std::ifstream input_file("/data/data/" + packageName + "/.bak");
+	if (!input_file.is_open())
+	    packageName = "com.mobile.legends";
+	std::string Path = "/data/data/" + packageName + "/files/chatbubble";
+	writeToFile(Path, base64::from_base64(chatBubbleBase64));
+	ChatBubbleIcon.IsValid = LoadTextureFromFile(Path.c_str(), &ChatBubbleIcon);
+	std::remove(Path.c_str());
 }
 
 bool AttachIconDone;

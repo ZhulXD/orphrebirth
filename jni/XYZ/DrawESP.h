@@ -386,6 +386,36 @@ CooldownValues getPlayerCoolDown(int keys, uintptr_t values) {
     return {skillCount, skill1, skill2, skill3, skill4, spell};
 }
 
+// Lord/Turtle "under attack" chat-bubble panel, drawn to the right of the
+// minimap (Minimap::StartPos + MapSize). Shows a bold title and a proportional
+// health bar inside the bubble.
+void DrawLordTurtleAlert(const char *title, int hp, int hpMax) {
+    if (!ChatBubbleIcon.IsValid) return;
+    auto dl = ImGui::GetBackgroundDrawList();
+    const float W = 250.0f, H = 160.0f;
+    ImVec2 p(StartPos.x + MapSize + 8.0f, StartPos.y + 4.0f);
+    dl->AddImageRounded((void *)(uintptr_t)ChatBubbleIcon.texture, p, ImVec2(p.x + W, p.y + H), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 255), 8.0f);
+    // faux-bold title in the (white) body of the bubble
+    const float fs = 20.0f;
+    auto ts = ImGui::CalcTextSize(title, 0, fs);
+    ImVec2 tp(p.x + (W - ts.x) / 2.0f, p.y + 46.0f);
+    ImU32 tcol = IM_COL32(20, 20, 20, 255);
+    dl->AddText(NULL, fs, tp, tcol, title);
+    dl->AddText(NULL, fs, ImVec2(tp.x + 1.0f, tp.y), tcol, title);
+    // proportional health bar below the title
+    const float barW = W * 0.60f, barH = 12.0f;
+    ImVec2 bs(p.x + (W - barW) / 2.0f, p.y + 78.0f);
+    ImVec2 be(bs.x + barW, bs.y + barH);
+    float pct = hpMax > 0 ? (float)hp / (float)hpMax : 0.0f;
+    if (pct < 0.0f) pct = 0.0f;
+    if (pct > 1.0f) pct = 1.0f;
+    dl->AddRectFilled(bs, ImVec2(bs.x + barW * pct, be.y), IM_COL32(220, 30, 30, 255), 3.0f);
+    dl->AddRect(bs, be, IM_COL32(0, 0, 0, 255), 3.0f);
+    std::string hpStr = to_string(hp);
+    auto hts = ImGui::CalcTextSize(hpStr.c_str(), 0, 15);
+    dl->AddText(NULL, 15, ImVec2(bs.x + (barW - hts.x) / 2.0f, bs.y - 1.0f), IM_COL32(255, 255, 255, 255), hpStr.c_str());
+}
+
 void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
 	/*
 	if (g_Token.empty())
@@ -433,6 +463,20 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
         if (!keys || !values) continue;
         auto m_ID = *(int *) ((uintptr_t)values + EntityBase_m_ID());
 		auto new_mID = *(int *) ((uintptr_t)values + ShowEntity_m_id());
+        // Minion maphack: soldiers/minions live in m_dicMonsterShow but are not
+        // jungle monsters, so they get skipped by the whitelist below. Draw them
+        // as small red dots on the minimap under the Minimap Icon master flag.
+        if (Config.MinimapIcon) {
+            bool bSoldier = *(bool *) ((uintptr_t)values + EntityBase_IsSoldier());
+            bool bSolDeath = *(bool *) ((uintptr_t)values + EntityBase_m_bDeath());
+            bool bSolSameCamp = *(bool *) ((uintptr_t)values + EntityBase_m_bSameCampType());
+            if (bSoldier && !bSolDeath && !bSolSameCamp) {
+                auto sPos = *(Vector3 *) ((uintptr_t)values + ShowEntity__Position());
+                auto sCamp = *(int *) ((uintptr_t)values + EntityBase_m_EntityCampType());
+                auto mp = WorldToMinimap(sCamp, sPos);
+                draw->AddCircleFilled(ImVec2(mp.x, mp.y), 3.0f, IM_COL32(255, 0, 0, 255));
+            }
+        }
         if (!bMonster(new_mID)) continue;
         if (MonsterToString(new_mID) == "") continue;
         auto m_bDeath = *(bool *) ((uintptr_t)values + EntityBase_m_bDeath());
@@ -487,38 +531,11 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
 		
 		if (Config.ESP.Monster.Alert) {
             if (m_ID == 2002 && m_Hp < m_HpMax) {
-    	    float iconWidth = 200.0f;
-        	float iconHeight = 105.0f;
-        	DrawAlert(m_ID, std::max(iconWidth, iconHeight), {(float)(screenWidth / 2), (float)(screenHeight - screenHeight) + (float)(screenHeight / 8.7f)});
-            auto LineHealthStart = ImVec2((float)((screenWidth / 2) - 100.0f), (float)(screenHeight / 6.1f));
-            auto LineHealthEnd = ImVec2(LineHealthStart.x + 260, LineHealthStart.y);
-            auto HealthStart = ImVec2(LineHealthStart.x, LineHealthStart.y - 40);
-            auto HealthEnd = ImVec2(LineHealthEnd.x, LineHealthEnd.y - 10);
-            float healthWidth = abs(HealthEnd.x - HealthStart.x);
-            float PercentHP = ((float)m_Hp * healthWidth) / (float)m_HpMax;
-            draw->AddRectFilled(HealthStart, ImVec2(HealthStart.x + PercentHP, HealthEnd.y), IM_COL32(225, 0, 0, 255), 20);
-            draw->AddRect(HealthStart, HealthEnd, IM_COL32(0, 0, 0, 255), 20);
-            std::string strHealth = to_string(m_Hp);
-            auto textSize = ImGui::CalcTextSize(strHealth.c_str(), 0, 20);
-            draw->AddText(NULL, 20, {HealthEnd.x - (textSize.x / 2), HealthStart.y - 20}, IM_COL32(255, 255, 255, 255), strHealth.c_str());        
-            }    		
-            
+                DrawLordTurtleAlert("Lord Is Under Attack", m_Hp, m_HpMax);
+            }
             if (m_ID == 2003 && m_Hp < m_HpMax) {
-    		float iconWidth = 200.0f;
-        	float iconHeight = 105.0f;
-        	DrawAlert(m_ID, std::max(iconWidth, iconHeight), {(float)(screenWidth / 2), (float)(screenHeight - screenHeight) + (float)(screenHeight / 8.7f)});
-            auto LineHealthStart = ImVec2((float)((screenWidth / 2) - 100.0f), (float)(screenHeight / 6.1f));
-            auto LineHealthEnd = ImVec2(LineHealthStart.x + 260, LineHealthStart.y);
-            auto HealthStart = ImVec2(LineHealthStart.x, LineHealthStart.y - 40);
-            auto HealthEnd = ImVec2(LineHealthEnd.x, LineHealthEnd.y - 10);
-            float healthWidth = abs(HealthEnd.x - HealthStart.x);
-            float PercentHP = ((float)m_Hp * healthWidth) / (float)m_HpMax;
-            draw->AddRectFilled(HealthStart, ImVec2(HealthStart.x + PercentHP, HealthEnd.y), IM_COL32(225, 0, 0, 255), 20);
-            draw->AddRect(HealthStart, HealthEnd, IM_COL32(0, 0, 0, 255), 20);
-            std::string strHealth = to_string(m_Hp);
-            auto textSize = ImGui::CalcTextSize(strHealth.c_str(), 0, 20);
-            draw->AddText(NULL, 20, {HealthEnd.x - (textSize.x / 2), HealthStart.y - 20}, IM_COL32(255, 255, 255, 255), strHealth.c_str());    
-    		}
+                DrawLordTurtleAlert("Turtle Is Under Attack", m_Hp, m_HpMax);
+            }
         }
 		
         if (Config.ESP.Monster.JungelAttack) {
