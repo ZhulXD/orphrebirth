@@ -392,28 +392,36 @@ CooldownValues getPlayerCoolDown(int keys, uintptr_t values) {
 void DrawLordTurtleAlert(const char *title, int hp, int hpMax) {
     if (!ChatBubbleIcon.IsValid) return;
     auto dl = ImGui::GetBackgroundDrawList();
-    const float W = 250.0f, H = 160.0f;
+    const float W = 250.0f;
+    const float H = W * (406.0f / 834.0f);          // keep the bubble's aspect ratio
     ImVec2 p(StartPos.x + MapSize + 8.0f, StartPos.y + 4.0f);
-    dl->AddImageRounded((void *)(uintptr_t)ChatBubbleIcon.texture, p, ImVec2(p.x + W, p.y + H), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 255), 8.0f);
-    // faux-bold title in the (white) body of the bubble
-    const float fs = 20.0f;
-    auto ts = ImGui::CalcTextSize(title, 0, fs);
-    ImVec2 tp(p.x + (W - ts.x) / 2.0f, p.y + 46.0f);
+    dl->AddImageRounded((void *)(uintptr_t)ChatBubbleIcon.texture, p, ImVec2(p.x + W, p.y + H), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 255), 4.0f);
+    // white interior region of the bubble (measured fractions of the image)
+    const float ixl = p.x + 0.045f * W, ixr = p.x + 0.955f * W;
+    const float iyt = p.y + 0.055f * H, iyb = p.y + 0.775f * H;
+    const float iw = ixr - ixl, ih = iyb - iyt, icx = (ixl + ixr) * 0.5f;
+    // faux-bold title, auto-fit so it never touches the bubble walls
+    float fs = ih * 0.34f;
+    ImVec2 ts = ImGui::CalcTextSize(title, 0, fs);
+    const float maxTextW = iw * 0.88f;
+    if (ts.x > maxTextW) { fs *= maxTextW / ts.x; ts = ImGui::CalcTextSize(title, 0, fs); }
+    ImVec2 tp(icx - ts.x * 0.5f, iyt + ih * 0.06f);
     ImU32 tcol = IM_COL32(20, 20, 20, 255);
     dl->AddText(NULL, fs, tp, tcol, title);
-    dl->AddText(NULL, fs, ImVec2(tp.x + 1.0f, tp.y), tcol, title);
-    // proportional health bar below the title
-    const float barW = W * 0.60f, barH = 12.0f;
-    ImVec2 bs(p.x + (W - barW) / 2.0f, p.y + 78.0f);
+    dl->AddText(NULL, fs, ImVec2(tp.x + 1.0f, tp.y), tcol, title);   // faux-bold
+    // proportional health bar centered below the title
+    const float barW = iw * 0.80f, barH = ih * 0.24f;
+    ImVec2 bs(icx - barW * 0.5f, iyt + ih * 0.52f);
     ImVec2 be(bs.x + barW, bs.y + barH);
     float pct = hpMax > 0 ? (float)hp / (float)hpMax : 0.0f;
     if (pct < 0.0f) pct = 0.0f;
     if (pct > 1.0f) pct = 1.0f;
-    dl->AddRectFilled(bs, ImVec2(bs.x + barW * pct, be.y), IM_COL32(220, 30, 30, 255), 3.0f);
-    dl->AddRect(bs, be, IM_COL32(0, 0, 0, 255), 3.0f);
+    dl->AddRectFilled(bs, ImVec2(bs.x + barW * pct, be.y), IM_COL32(220, 30, 30, 255), 2.0f);
+    dl->AddRect(bs, be, IM_COL32(0, 0, 0, 255), 2.0f);
     std::string hpStr = to_string(hp);
-    auto hts = ImGui::CalcTextSize(hpStr.c_str(), 0, 15);
-    dl->AddText(NULL, 15, ImVec2(bs.x + (barW - hts.x) / 2.0f, bs.y - 1.0f), IM_COL32(255, 255, 255, 255), hpStr.c_str());
+    float hfs = barH * 0.9f;
+    auto hts = ImGui::CalcTextSize(hpStr.c_str(), 0, hfs);
+    dl->AddText(NULL, hfs, ImVec2(icx - hts.x * 0.5f, bs.y + (barH - hts.y) * 0.5f), IM_COL32(255, 255, 255, 255), hpStr.c_str());
 }
 
 void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
