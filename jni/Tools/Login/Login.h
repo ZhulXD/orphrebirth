@@ -2,8 +2,25 @@
 #include "curl/curl.h"
 #include "Tools.h"
 #include "json.hpp"
+#include "ObfStr.h"
+#include "AntiCrack.h"
 
 using json = nlohmann::ordered_json;
+
+// ===========================================================================
+// Key-system server configuration.
+//
+// Operator secrets. Wrapped with OBF()/pinning so they do not leak in
+// `strings` output.
+//   KS_ENDPOINT_URL : full URL of the freeKey endpoint on the server.
+//   KS_AUTH_PEPPER  : must match KEY_SYSTEM_PEPPER on the server exactly.
+//   KS_TLS_PIN      : server SPKI pin, "sha256//<base64>" (empty = pin off).
+//   KS_TELEGRAM_URL : seller contact opened by the in-menu Telegram button.
+// ===========================================================================
+#define KS_ENDPOINT_URL "https://orphsystem.lovable.app/api/public/freeKey"
+#define KS_AUTH_PEPPER  "Ahag6#&K8ja@$Hgu!gHs#G4#ja@k#"
+#define KS_TLS_PIN      "sha256//+cWUJ/hdAetPUsYN4LX445lyt3vPAPM8KrDEg+Zei4s="
+#define KS_TELEGRAM_URL "https://t.me/safkq"
 
 std::string title, version;
 std::string UUID;
@@ -49,6 +66,13 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
 }
 
 std::string Login(JavaVM *jvm, const char *user_key, bool *success) {
+    // Anti-tamper gate: refuse to authenticate under a debugger or dynamic
+    // instrumentation (Frida, etc.) so the key exchange cannot be traced.
+    if (anticrack::isCompromised()) {
+        *success = false;
+        return OBF("environment not allowed");
+    }
+
     JNIEnv *env;
     jvm->AttachCurrentThread(&env, 0);
     
@@ -88,8 +112,7 @@ std::string Login(JavaVM *jvm, const char *user_key, bool *success) {
     curl = curl_easy_init();
     
     if (curl) {
-        std::string bangrendi = "https://t0pgamemurah.xyz/freeKey/freeKey.php";
-        //dtd::string bangrendi = bangrendi;      
+        std::string bangrendi = OBF(KS_ENDPOINT_URL);
         curl_easy_setopt(curl, CURLOPT_URL ,bangrendi.c_str());
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
         curl_easy_setopt(curl, CURLOPT_DEFAULT_PROTOCOL, "https");
@@ -112,7 +135,16 @@ std::string Login(JavaVM *jvm, const char *user_key, bool *success) {
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) &chunk);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-        
+
+        // Certificate pinning: the server's public key must match KS_TLS_PIN,
+        // otherwise the request is aborted. This defeats MITM/proxy sniffing
+        // even with peer verification disabled (no CA bundle needed). The pin
+        // is only applied once a real value has been configured.
+        std::string tlsPin = OBF(KS_TLS_PIN);
+        if (tlsPin.size() > 9 && tlsPin.find("REPLACE") == std::string::npos) {
+            curl_easy_setopt(curl, CURLOPT_PINNEDPUBLICKEY, tlsPin.c_str());
+        }
+
         res = curl_easy_perform(curl);
         if (res == CURLE_OK) {
             try {
@@ -139,8 +171,8 @@ std::string Login(JavaVM *jvm, const char *user_key, bool *success) {
                         auth += user_key;
                         auth += std::string("-");
                         auth += UUID;
-                        auth += std::string("-"); 
-                        auth += std::string("Vm8Lk7Uj2JmsjCPVPVjrLa7zgfx3uz9E");
+                        auth += std::string("-");
+                        auth += OBF(KS_AUTH_PEPPER);
                         std::string outputAuth = Tools::CalcMD5(auth);
                         g_Token = token;
                         g_Auth = outputAuth;
