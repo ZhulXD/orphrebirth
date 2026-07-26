@@ -392,40 +392,37 @@ CooldownValues getPlayerCoolDown(int keys, uintptr_t values) {
 void DrawLordTurtleAlert(const char *name, int hp, int hpMax, float screenHeight) {
     if (!ChatBubbleIcon.IsValid) return;
     auto dl = ImGui::GetBackgroundDrawList();
-    // Two-line title so the font stays big/proportional in a compact bubble:
-    //   line 1 = "<name> Is", line 2 = "Under Attack".
-    std::string l1 = std::string(name) + " Is";
-    const char *l2 = "Under Attack";
-    float fs = (screenHeight > 0.0f ? screenHeight : 720.0f) * 0.024f;   // proportional font
-    ImVec2 t1 = ImGui::CalcTextSize(l1.c_str(), 0, fs);
-    ImVec2 t2 = ImGui::CalcTextSize(l2, 0, fs);
-    float tw = t1.x > t2.x ? t1.x : t2.x;
-    // size the bubble to the text (interior is ~80% wide, ~72% tall of the image)
-    const float lineH = fs * 1.12f, barH = fs * 0.60f;
-    const float iw = tw / 0.80f;
-    const float ih = lineH * 2.0f + barH + fs * 0.55f;
-    const float W = iw / 0.91f, H = ih / 0.72f;
+    // Single-line title "<name> Is Under Attack" + a health bar with the HP
+    // number. The bubble width is sized to the text at a proportional font, so
+    // the text always fits (never overflows the bubble).
+    std::string title = std::string(name) + " Is Under Attack";
+    float fs = (screenHeight > 0.0f ? screenHeight : 720.0f) * 0.021f;
+    ImVec2 ts = ImGui::CalcTextSize(title.c_str(), 0, fs);
+    const float iw = ts.x / 0.82f;                  // text is ~82% of interior width
+    const float W = iw / 0.91f;                     // interior is ~91% of image width
+    const float H = W * (406.0f / 834.0f);          // keep the bubble's aspect ratio
     ImVec2 p(StartPos.x + MapSize + 8.0f, StartPos.y + 2.0f);
     dl->AddImageRounded((void *)(uintptr_t)ChatBubbleIcon.texture, p, ImVec2(p.x + W, p.y + H), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 255), 4.0f);
-    const float icx = p.x + 0.5f * W, iyt = p.y + 0.055f * H;
+    const float iyt = p.y + 0.055f * H, iyb = p.y + 0.775f * H;
+    const float ih = iyb - iyt, icx = p.x + 0.5f * W;
+    // faux-bold title near the top of the interior
+    ImVec2 tp(icx - ts.x * 0.5f, iyt + ih * 0.08f);
     const ImU32 tcol = IM_COL32(20, 20, 20, 255);
-    // line 1 (faux-bold)
-    ImVec2 pa(icx - t1.x * 0.5f, iyt + fs * 0.15f);
-    dl->AddText(NULL, fs, pa, tcol, l1.c_str());
-    dl->AddText(NULL, fs, ImVec2(pa.x + 1.0f, pa.y), tcol, l1.c_str());
-    // line 2 (faux-bold)
-    ImVec2 pb(icx - t2.x * 0.5f, pa.y + lineH);
-    dl->AddText(NULL, fs, pb, tcol, l2);
-    dl->AddText(NULL, fs, ImVec2(pb.x + 1.0f, pb.y), tcol, l2);
-    // health bar below the text (no number)
-    const float barW = iw * 0.9f;
-    ImVec2 bs(icx - barW * 0.5f, pb.y + lineH * 0.95f);
+    dl->AddText(NULL, fs, tp, tcol, title.c_str());
+    dl->AddText(NULL, fs, ImVec2(tp.x + 1.0f, tp.y), tcol, title.c_str());
+    // health bar with the HP number, centered below the title
+    const float barW = iw * 0.86f, barH = ih * 0.30f;
+    ImVec2 bs(icx - barW * 0.5f, iyt + ih * 0.52f);
     ImVec2 be(bs.x + barW, bs.y + barH);
     float pct = hpMax > 0 ? (float)hp / (float)hpMax : 0.0f;
     if (pct < 0.0f) pct = 0.0f;
     if (pct > 1.0f) pct = 1.0f;
     dl->AddRectFilled(bs, ImVec2(bs.x + barW * pct, be.y), IM_COL32(220, 30, 30, 255), 2.0f);
     dl->AddRect(bs, be, IM_COL32(0, 0, 0, 255), 2.0f);
+    std::string hpStr = to_string(hp);
+    float hfs = barH * 0.85f;
+    ImVec2 hts = ImGui::CalcTextSize(hpStr.c_str(), 0, hfs);
+    dl->AddText(NULL, hfs, ImVec2(icx - hts.x * 0.5f, bs.y + (barH - hts.y) * 0.5f), IM_COL32(255, 255, 255, 255), hpStr.c_str());
 }
 
 void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
@@ -443,8 +440,8 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
     // to MLBB's top-left square minimap). When on, StartPos/MapSize are derived
     // from screen height each frame and the manual sliders are disabled.
     if (Config.MinimapAutoSize) {
-        MapSize    = (int)(screenHeight * 0.322f);
-        StartPos.x = screenHeight * 0.053f;
+        MapSize    = (int)(screenHeight * 0.330f);
+        StartPos.x = screenHeight * 0.047f;
         StartPos.y = 0.0f;                      // flush to the top of the screen
     }
     if (Config.ESP.FPS) {
