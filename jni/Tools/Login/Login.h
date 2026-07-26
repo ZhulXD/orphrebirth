@@ -3,7 +3,6 @@
 #include "Tools.h"
 #include "json.hpp"
 #include "ObfStr.h"
-#include "AntiCrack.h"
 
 using json = nlohmann::ordered_json;
 
@@ -66,12 +65,11 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
 }
 
 std::string Login(JavaVM *jvm, const char *user_key, bool *success) {
-    // Anti-tamper gate: refuse to authenticate under a debugger or dynamic
-    // instrumentation (Frida, etc.) so the key exchange cannot be traced.
-    if (anticrack::isCompromised()) {
-        *success = false;
-        return OBF("environment not allowed");
-    }
+    // NOTE: no TracerPid/anti-debug gate here. The mod is injected into the
+    // game process (ptrace/zygisk), which legitimately sets TracerPid != 0, so
+    // an anti-debug gate would reject every real login. String obfuscation and
+    // TLS certificate pinning (below) provide the anti-crack protection that is
+    // compatible with an injected environment.
 
     JNIEnv *env;
     jvm->AttachCurrentThread(&env, 0);
