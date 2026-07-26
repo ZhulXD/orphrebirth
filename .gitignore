@@ -1,0 +1,3 @@
+# NDK build artifacts
+/obj/
+/libs/*/
