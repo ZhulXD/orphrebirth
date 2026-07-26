@@ -147,7 +147,7 @@ uintptr_t VirtualButton_m_States(){
 }
 
 #define ShowSelfPlayer_TryUseSkill2 (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "ShowSelfPlayer", "TryUseSkill", 9)
-#define ShowSelfPlayer_TryUseSkill (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "ShowSelfPlayer", "TryUseSkill", 11)
+#define ShowSelfPlayer_TryUseSkill (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "ShowSelfPlayer", "TryUseSkill", 12)
 #define ShowSelfPlayer_OnUpdate (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "ShowSelfPlayer", "Unity_OnUpdate",0)
 
 uintptr_t SystemData_GetBattlePlayerInfo() {
@@ -325,7 +325,7 @@ uintptr_t BattleBridge_ShowHeadEquip(){
 }
 
 uintptr_t BattleBridge_bStartBattle(){
-	return (uintptr_t) Il2CppGetFieldOffset("Assembly-CSharp.dll", "", "BattleBridge", "bStartBattle");
+	return (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "BattleBridge", "get_bStartBattle");
 }
 
 //--------------------------------> TEST NEW MAPHACK <--------------------------------
@@ -345,7 +345,7 @@ uintptr_t BattleManager_m_LocalPlayerShow(){
 	return (uintptr_t) Il2CppGetFieldOffset("Assembly-CSharp.dll", "", "BattleManager", "m_LocalPlayerShow");
 }
 
-#define BattleManager_m_dicPlayerShow2 (uintptr_t) Il2CppGetFieldOffset("Assembly-CSharp.dll", "", "BattleManager", "_dicPlayerShow")
+#define BattleManager_m_dicPlayerShow2 (uintptr_t) Il2CppGetFieldOffset("Assembly-CSharp.dll", "", "BattleManager", "m_dicPlayerShow")
 uintptr_t BattleManager_m_ShowPlayers(){
 	return (uintptr_t) Il2CppGetFieldOffset("Assembly-CSharp.dll", "", "BattleManager", "m_ShowPlayers");
 }
@@ -403,7 +403,7 @@ uintptr_t ShowEntity_m_id(){
 #define ShowEntity_m_RoleName (uintptr_t) Il2CppGetFieldOffset("Assembly-CSharp.dll", "", "ShowEntity", "m_RoleName")
 #define ShowEntity_m_HeadIcon (uintptr_t) Il2CppGetFieldOffset("Assembly-CSharp.dll", "", "ShowEntity", "m_HeadIconDefault")
 // thanks for youtube.com/@cheatcode-revolution
-#define ShowEntity_CanSight (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "ShowEntity", "get_m_CanSight", 1)
+#define ShowEntity_CanSight (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "ShowEntity", "CanSight", 1)
 //class LogicEntityBase
 #define LogicEntityBase_get_m_Level (uintptr_t) Il2CppGetFieldOffset("Assembly-CSharp.dll", "Battle", "LogicEntityBase", "m_Level")
 
@@ -488,7 +488,7 @@ uintptr_t EntityBase_get_m_Level(){
 #define CoolDownData_GetCoolTime (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "Battle", "CoolDownData", "GetCoolTime")
 
 #define ShowWildMonster_CanSight (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "ShowWildMonster", "CanSight", 1)
-#define ShowWildMonster_OnUpdate (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "ShowWildMonater", "OnUpdate")
+#define ShowWildMonster_OnUpdate (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "ShowWildMonster", "OnUpdate")
 
 //Unlock Skin
 #define LogicFighter_m_SkillComp (uintptr_t) Il2CppGetFieldOffset("Assembly-CSharp.dll", "Battle", "LogicFighter", "m_SkillComp")
@@ -590,7 +590,7 @@ Dictionary<void*, void*> *get_Monsters(){
 #define AntiCheatReporter_ctor (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "AntiCheatReporter", ".ctor")
 #define AntiCheatReporter_cctor (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "AntiCheatReporter", ".cctor")
 
-#define TestCase_gp_start_anti_cheat (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "testinterval", "TestCase", "gp_start_anti_cheat")
+#define TestCase_gp_start_anti_cheat (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "testinternal", "TestCase", "gp_start_anti_cheat")
 #define DeviceUtil_GetRefreshRate (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "DeviceUtil", "GetRefreshRate")
 #define DeviceUtil_GetIsRoot (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "DeviceUtil", "GetIsRoot")
 #define DeviceUtil_OpenURL (uintptr_t) Il2CppGetMethodOffset("UnityEngine.CoreModule.dll", "", "Application", "OpenURL", 1)
@@ -601,7 +601,7 @@ Dictionary<void*, void*> *get_Monsters(){
 #define ShowEntityUpdateEyeLayer (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "ShowEntity","UpdateEyeLayer", 3)
 #define ShowEntity_InitSetEye (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "ShowEntity","InitSetEye", 2)
 
-#define BattleBridge_OnSignReport (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "BattleBridge", "OnSignReport", 8)
+#define BattleBridge_OnSignReport (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "BattleBridge", "OnSignReportData", 8)
 #define BattleBridge_SafeSendGameReportData (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "BattleBridge", "SafeSendGameReportData", 1)
 #define BattleBridge_SendGameReportData (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "BattleBridge", "SendGameReportData", 1)
 #define BattleBridge_SendLargeGameReportData (uintptr_t) Il2CppGetMethodOffset("Assembly-CSharp.dll", "", "BattleBridge", "SendLargeGameReportData", 1)
