@@ -396,23 +396,27 @@ void DrawLordTurtleAlert(const char *name, int hp, int hpMax, float screenHeight
     // number. The bubble width is sized to the text at a proportional font, so
     // the text always fits (never overflows the bubble).
     std::string title = std::string(name) + " Is Under Attack";
-    float fs = (screenHeight > 0.0f ? screenHeight : 720.0f) * 0.021f;
+    float fs = (screenHeight > 0.0f ? screenHeight : 720.0f) * 0.022f;
     ImVec2 ts = ImGui::CalcTextSize(title.c_str(), 0, fs);
-    const float iw = ts.x / 0.82f;                  // text is ~82% of interior width
-    const float W = iw / 0.91f;                     // interior is ~91% of image width
-    const float H = W * (406.0f / 834.0f);          // keep the bubble's aspect ratio
+    // Width follows the text; HEIGHT follows the content (title + bar) instead of
+    // the image aspect, so the bubble stays short and the text/bar fill it well.
+    const float barH = fs * 0.82f;
+    const float topPad = fs * 0.35f, gap = fs * 0.28f, botPad = fs * 0.42f;
+    const float iw = ts.x / 0.86f;                          // interior width
+    const float ih = topPad + fs + gap + barH + botPad;     // interior height
+    const float W = iw / 0.91f;                             // image width  (interior 91%)
+    const float H = ih / 0.72f;                             // image height (interior 72%, tail below)
     ImVec2 p(StartPos.x + MapSize + 8.0f, StartPos.y + 2.0f);
     dl->AddImageRounded((void *)(uintptr_t)ChatBubbleIcon.texture, p, ImVec2(p.x + W, p.y + H), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 255), 4.0f);
-    const float iyt = p.y + 0.055f * H, iyb = p.y + 0.775f * H;
-    const float ih = iyb - iyt, icx = p.x + 0.5f * W;
-    // faux-bold title near the top of the interior
-    ImVec2 tp(icx - ts.x * 0.5f, iyt + ih * 0.08f);
+    const float iyt = p.y + 0.055f * H, icx = p.x + 0.5f * W;
+    // faux-bold title
+    ImVec2 tp(icx - ts.x * 0.5f, iyt + topPad);
     const ImU32 tcol = IM_COL32(20, 20, 20, 255);
     dl->AddText(NULL, fs, tp, tcol, title.c_str());
     dl->AddText(NULL, fs, ImVec2(tp.x + 1.0f, tp.y), tcol, title.c_str());
-    // health bar with the HP number, centered below the title
-    const float barW = iw * 0.86f, barH = ih * 0.30f;
-    ImVec2 bs(icx - barW * 0.5f, iyt + ih * 0.52f);
+    // health bar (with HP number) below the title, with a bottom margin
+    const float barW = iw * 0.90f;
+    ImVec2 bs(icx - barW * 0.5f, iyt + topPad + fs + gap);
     ImVec2 be(bs.x + barW, bs.y + barH);
     float pct = hpMax > 0 ? (float)hp / (float)hpMax : 0.0f;
     if (pct < 0.0f) pct = 0.0f;
@@ -440,8 +444,8 @@ void NewDrawESP(ImDrawList *draw, float screenWidth, float screenHeight) {
     // to MLBB's top-left square minimap). When on, StartPos/MapSize are derived
     // from screen height each frame and the manual sliders are disabled.
     if (Config.MinimapAutoSize) {
-        MapSize    = (int)(screenHeight * 0.330f);
-        StartPos.x = screenHeight * 0.047f;
+        MapSize    = (int)(screenHeight * 0.338f);
+        StartPos.x = screenHeight * 0.042f;
         StartPos.y = 0.0f;                      // flush to the top of the screen
     }
     if (Config.ESP.FPS) {
